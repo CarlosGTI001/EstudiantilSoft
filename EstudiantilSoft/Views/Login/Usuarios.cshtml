@@ -1,0 +1,41 @@
+﻿@using System.Text.RegularExpressions
+@model IEnumerable<EstudiantilSoft.Models.login>
+
+@{
+    ViewData["Page"] = "Usuarios - ";
+    ViewData["Menu"] = "true";
+    ViewData["Index"] = "false";
+    ViewData["Login"] = "Logued";
+}
+
+
+<span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776; Modulos > Estudiantes</span>
+&nbsp;&nbsp;&nbsp;<a asp-action="Index" class="btn btn-danger"><- Volver</a>
+
+<p>
+    <a asp-action="Create">Crear nuevo usuario</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.UserName)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.UserName)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.UserId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.UserId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.UserId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

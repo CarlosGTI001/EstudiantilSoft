@@ -1,0 +1,574 @@
+﻿@model IEnumerable<EstudiantilSoft.Models.Secciones>
+@{
+
+    ViewData["Page"] = "Secciones - ";
+    ViewData["Menu"] = "true";
+    ViewData["Index"] = "false";
+    ViewData["Login"] = "Logued";
+}
+
+@{
+}
+
+<span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776; Modulos > Secciones</span>
+&nbsp;&nbsp;&nbsp;<a asp-action="Index" class="btn btn-danger"><- Volver</a>
+<br />
+<br />
+<br />
+<content class="bodyest">
+    Fecha Inicio:
+    <input type='text' readonly id='date-from' class="datepicker" name="fechaInicial" placeholder='Fecha Inicio' class="form-control form-control-sm">
+    &nbsp;&nbsp;&nbsp;
+    Fecha Fin:
+    <input type='text' readonly id='date-to' class="datepicker" placeholder='Fecha fin' class="form-control form-control-sm">
+    &nbsp;&nbsp;&nbsp;
+    <submit onclick="filtrar()" type='button' id="btn_search" value="Filtrar por fecha" name="fechaFinal" class="btn btn-danger btn-lg">Filtrar</submit>
+    &nbsp;
+    <button id="btnLimpiar" class="btn btn-success btn-lg" onclick="cargarDatos()">Limpiar</button>
+    <button id="btnInsertar" class="btn btn-primary btn-lg float-right" style="margin-right: 50px;" onclick="abrirModalInsertar()">Ingresar Seccion <i class="fa fa-plus"></i></button>
+
+    <a id="btnExportar" class="btn btn btn-outline-success  btn-lg float-right" style="margin-right: 10px;" onclick="exportar();">Exportar a Excel <i class="fa fa-file-excel"></i></a>
+
+
+    <br />
+    <table class="table bg-primary text-white" id="myTable">
+
+        <thead>
+
+            <tr>
+                <th>
+                    ID
+                </th>
+                <th>
+                    Seccion
+                </th>
+                
+                <th>
+                    Curso
+                </th>
+
+                <th>
+                    Maestro
+                </th>
+                <th>
+                    Fecha de Registro
+                </th>
+                <th>
+
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @*@foreach(var item in Model){
+            <tr>
+            <td>
+            @Html.DisplayFor(modelItem => item.SeccionNombre)
+            @{
+            Nombres.Append(item.SeccionNombre);
+            }
+            </td>
+            <td>
+            @Html.DisplayFor(modelItem => item.Nivel)
+            @{
+            Niveles.Append(item.Nivel);
+            }
+            </td>
+            <td>
+            @Html.DisplayFor(modelItem => item.FechaRegistro)
+            @{
+            Fechas.Append(item.FechaRegistro);
+            }
+            </td>
+            </tr>
+            }*@
+        </tbody>
+    </table>
+</content>
+<div id="dialog-form" title="Detalles">
+
+    <form asp-action="ModificarSeccion" asp-controller="Modulos" method="post">
+        <fieldset>
+            <label class="label" for="name">Curso</label>
+            <br />
+            <select id="curso">
+            </select>
+            <br />
+            <label class="label" for="name">Seccion</label>
+            <br />
+            <select id="seccion">
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+                <option value="F">F</option>
+            </select>
+            <br />
+            <label class="label" for="name">Maestro</label>
+            <br />
+            <select id="maestro">
+            </select>
+            <br />
+        </fieldset>
+    </form>
+</div>
+
+<div id="dialog-form-insertar" title="Insertar">
+    <p class="validateTips">Todos los campos son necesarios.</p>
+
+    <form asp-action="InsertarSeccion" asp-controller="Modulos" method="post">
+        <fieldset>
+            <label class="label" for="name">Curso</label>
+            <br />
+            <select id="cursoI">
+            </select>
+            <br />
+            <label class="label" for="name">Seccion</label>
+            <br />
+            <select id="seccionI">
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+                <option value="F">F</option>
+            </select>
+            <br />
+            <label class="label" for="name">Maestro</label>
+            <br />
+            <select id="maestroI">
+
+            </select>
+            <br />
+            <input type="submit" tabindex="-1" style="position:absolute; top:-1000px" value="Enviar">
+        </fieldset>
+    </form>
+</div>
+<script>
+    $(document).ready(function () {
+        $(".datepicker").datepicker({
+            "dateFormat": "mm-dd-yy",
+            changeYear: true
+        });
+    });
+
+    //$(document).ready(function () {
+    //    // Test Moment.js
+    //    var clock = setInterval(function () {
+    //        $('#clock').text(moment().format('YYYY-MM-DD HH:mm:ss'))
+    //    }, 1000);
+
+    //    // Test DataTables.js
+    //    $.fn.dataTable.ext.errMode = 'throw';
+
+    //    $.fn.dataTable.ext.search.push(
+    //        function (settings, data, dataIndex, dataFull, dataFullIndex) {
+    //            var wrapper = $(settings.nTable).closest('.table-wrapper');
+    //            var fecha_row = dataFull.FechaRegistro.timestamp;
+    //            var fecha_inicio = $(wrapper).find('[name="fecha_inicio"]').val();
+    //            var fecha_fin = $(wrapper).find('[name="fecha_fin"]').val();
+    //            fecha_inicio = moment(fecha_inicio, 'YYYY-MM-DD').unix();
+    //            fecha_fin = moment(fecha_fin, 'YYYY-MM-DD').unix();
+    //            console.log(fecha_row, fecha_inicio, fecha_fin);
+
+    //            if ((!isNaN(fecha_inicio) && fecha_inicio > fecha_row) ||
+    //                (!isNaN(fecha_fin) && fecha_fin < fecha_row)) {
+    //                return false;
+    //            }
+    //            return true;
+
+    //        }
+    //    );
+    //    });
+    var idi;
+    $.fn.dataTable.render.moment = function (from, to, locale) {
+        // Argument shifting
+        if (arguments.length === 1) {
+            locale = 'en';
+            to = from;
+            from = 'YYYY-MM-DD';
+        }
+        else if (arguments.length === 2) {
+            locale = 'en';
+        }
+
+        return function (d, type, row) {
+            if (!d) {
+                return type === 'sort' || type === 'type' ? 0 : d;
+            }
+
+            var m = window.moment(d, from, locale, true);
+
+            // Order and type get a number value from Moment, everything else
+            // sees the rendered value
+            return m.format(type === 'sort' || type === 'type' ? 'x' : to);
+        };
+    };
+    $('#myTable').DataTable({
+
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.10.16/i18n/Spanish.json"
+        },
+        columns: [
+
+            {
+                name: 'ID',
+                data: 'SeccionID'
+            },
+            {
+                name: 'Seccion',
+                data: 'seccionNombre'
+            },
+            {
+                name: 'Curso',
+                data: 'cursoNombre'
+            },
+            {
+                name: 'Maestro',
+                data: 'maestroNombre'
+            },
+            {
+                name: 'FechaRegistro',
+                data: 'FechaRegistro',
+                displayFormat: 'D/M/YYYY',
+                render: {
+                    _: 'display',
+                    sort: 'timestamp',
+                    filter: 'timestamp'
+                }
+            },
+            {
+                name: 'Crud',
+                data: 'Crud'
+            },
+        ],
+
+
+    });
+    var cantidad = @Model.Count().ToString();
+    var son;
+    var dat;
+    var Secciones;
+    async function cargarDatos() {
+        let son = await fetch("../../../../../Modulos/LeerSecciones");
+        let dat = await son.json()
+        var table = $('#myTable').DataTable();
+        table
+            .clear()
+            .draw();
+        Secciones = JSON.parse(dat);
+        Secciones.forEach(a => {
+            var numeroFecha = a.FechaRegistro;
+            var fechaObj = new Date(numeroFecha);
+            var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            var fechaText = fechaObj.toLocaleDateString('es-ES', options);
+            console.log(fechaObj.toLocaleDateString('es-ES', options));
+            $('#myTable').DataTable().rows.add(
+                [
+                    {
+                        seccionNombre: a.seccionNombre,
+                        SeccionID: a.SeccionID,
+                        cursoNombre: a.cursoNombre,
+                        maestroNombre: a.maestroNombre + " " + a.maestroApellido,
+                        FechaRegistro: {
+                            display: fechaText,
+                            timestamp: moment(a.FechaRegistro, "DD-MM-YYYY hh:mm:ss").unix() // "704152800"
+                        },
+                        Crud: '<a id="editSeccion" class="btn btn-warning" onclick="abrirModal(' + a.SeccionID + ')"> Detalles </a>'
+                    },
+                ]
+            ).draw();
+        }
+        )
+
+        document.getElementById("date-from").value = "";
+        document.getElementById("date-to").value = "";
+
+    }
+
+    cargarDatos();
+    var fechaIni = document.getElementById("date-from");
+    var fechaFini = document.getElementById("date-to");
+
+
+    var dialog, form
+
+
+
+
+    dialog = $("#dialog-form").dialog({
+        autoOpen: false,
+        height: 400,
+        width: 350,
+        modal: true,
+        buttons: {
+            "Editar": enviarDatos,
+            Delete: function () {
+                eliminarDatos()
+                cargarDatos();
+                dialog.dialog("close");
+            },
+            Cancel: function () {
+                cargarDatos();
+                dialog.dialog("close");
+            }
+        },
+        close: function () {
+            form[0].reset();
+        }
+    });
+
+    dialogI = $("#dialog-form-insertar").dialog({
+        autoOpen: false,
+        height: 400,
+        width: 350,
+        modal: true,
+        buttons: {
+            "Insertar": insertarDatos,
+            Cancel: function () {
+                dialogI.dialog("close");
+            }
+        },
+        close: function () {
+            form[0].reset();
+        }
+    });
+
+    async function insertarDatos() {
+        await fetch('../../../../../Modulos/InsertarSeccion?&seccionNombre=' 
+            + document.getElementById("seccionI").value
+            + '&CursoID='  
+            + document.getElementById("cursoI").value
+            + '&MaestroID='
+            + document.getElementById("maestroI").value
+        )
+        await Swal.fire('Seccion insertada correctamente', '', 'success');
+        await cargarDatos();
+
+    }
+
+    async function enviarDatos() {
+
+
+        Swal.fire({
+            title: 'En realidad desea editar el Seccion?',
+            showDenyButton: true,
+            confirmButtonText: 'Si',
+            denyButtonText: `No`,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('../../../../../Modulos/ModificarSeccion?SeccionID=' 
+                    + idi
+                    + '&seccionNombre='
+                    + document.getElementById("seccion").value
+                    + '&CursoID='
+                    + document.getElementById("curso").value
+                    + '&MaestroID='
+                    + document.getElementById("maestro").value
+                ).then((result)=>{
+                    cargarDatos();
+                    Swal.fire('Seccion modificada correctamente', '', 'success');
+                    dialog.dialog("close");
+                })
+                
+                
+                
+            }
+        }).catch((error) => {
+            Swal.fire('Se produjo un error al modificar la seccion', '', 'error');
+        });
+        await cargarDatos();
+    }
+    async function eliminarDatos() {
+        Swal.fire({
+            title: 'En realidad desea eliminar el Seccion?',
+            showDenyButton: true,
+            confirmButtonText: 'Si',
+            denyButtonText: `No`,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('../../../../../Modulos/EliminarSecciones?SeccionID=' + idi).then((result) => {
+                    Swal.fire('Seccion eliminada correctamente', '', 'success');
+                    cargarDatos();
+                    dialog.dialog("close");
+                })
+                
+            }
+        })
+    }
+    form = dialog.find("form").on("submit", function (event) {
+        event.preventDefault();
+        addUser();
+    });
+
+    var datos;
+    var jsan;
+    var Secciones, maestros, cursos;
+
+    async function abrirModal(id) {
+        let son = await fetch("../../../../../Modulos/filtrarSeccionesID?SeccionID=" + id);
+        let dat = await son.json();
+        Secciones = JSON.parse(dat);
+        maestros = await fetch("../../../../../Modulos/LeerMaestros");
+        let datMaestros = await maestros.json();
+        maestros = JSON.parse(datMaestros);
+
+        cursos = await fetch("../../../../../Modulos/LeerCursos");
+        let datCursos = await cursos.json();
+        cursos = JSON.parse(datCursos);
+
+        var selectMaestros = document.getElementById('maestro');
+        selectMaestros.innerHTML = '';
+        await maestros.forEach((a) => {
+            selectMaestros.innerHTML += '<option value="' + a.MaestroID + '">' + a.maestroNombre + ' ' + a.maestroApellido + '</option>';
+        })
+        var selectSecciones = document.getElementById('seccion');
+        var selectCursos = document.getElementById('curso');
+        selectCursos.innerHTML = '';
+        await cursos.forEach((a) => {
+            selectCursos.innerHTML += '<option value="' + a.cursoID + '">' + a.cursoNombre + " " + a.Nivel + '</option>';
+        })
+        var seleccionado;
+
+        for (var i = 0; i < selectMaestros.length; i++) {
+            if (Secciones.maestroNombre + ' ' + Secciones.maestroApellido  == selectMaestros[i].innerHTML) {
+                seleccionado = i;
+                document.getElementById('maestro').selectedIndex = seleccionado;
+                console.log(Secciones.maestroNombre + ' ' + Secciones.maestroApellido + ' = ' + selectMaestros[i].innerHTML);
+            }
+        }
+
+        for (var i = 0; i < selectSecciones.options.length; i++) {
+            if (Secciones.seccionNombre.slice(3, 4) == selectSecciones[i].innerHTML) {
+                seleccionado = i;
+                document.getElementById('seccion').selectedIndex = seleccionado;
+                console.log(Secciones.seccionNombre.slice(3, 4) + ' = ' + selectSecciones[i].innerHTML);
+            }
+
+        }
+        
+        for (var i = 0; i < selectCursos.length; i++) {
+            if (Secciones.cursoNombre + " " + Secciones.seccionNombre.slice(8) == selectCursos[i].innerHTML) {
+                seleccionado = i;
+                document.getElementById('curso').selectedIndex = seleccionado;
+                console.log(Secciones.cursoNombre + ' ' + Secciones.seccionNombre.slice(8) + ' = ' + selectCursos[i].innerHTML)
+            }
+            //
+        }
+        
+        idi = id;
+        //document.getElementById("nombre").value = await asignatures.asignaturaNombre;
+        console.log("xD")
+        await dialog.dialog("open");
+    };
+
+
+    var selectMaestros, selectCursos;
+    async function abrirModalInsertar() {
+        maestros = await fetch("../../../../../Modulos/LeerMaestros");
+        let datMaestros = await maestros.json();
+        maestros = JSON.parse(datMaestros);
+
+        cursos = await fetch("../../../../../Modulos/LeerCursos");
+        let datCursos = await cursos.json();
+        cursos = JSON.parse(datCursos);
+
+        selectMaestros = document.getElementById('maestroI');
+        selectMaestros.innerHTML = '';
+        
+        await maestros.forEach((a) => {
+            selectMaestros.innerHTML += '<option value="' + a.MaestroID + '">' + a.maestroNombre + ' ' + a.maestroApellido + '</option>';
+            console.log(a);
+        })
+
+        selectCursos = document.getElementById('cursoI');
+        selectCursos.innerHTML = '';
+        await cursos.forEach((a) => {
+            selectCursos.innerHTML += '<option value="' + a.cursoID + '">' + a.cursoNombre + " " + a.Nivel + '</option>';
+            console.log(a.cursoID);
+        })
+        dialogI.dialog("open");
+    }
+    async function filtrar() {
+        if (fechaFini.value != '' || fechaIni.value != '') {
+            if (fechaIni.value <= fechaFini.value) {
+
+                fechaIni = document.getElementById("date-from");
+                fechaFini = document.getElementById("date-to");
+                let son = await fetch("../../../../../Modulos/filtrarSecciones?fechaInicial=" + fechaIni.value + "&fechaFinal=" + fechaFini.value);
+                let dat = await son.json()
+                var table = $('#myTable').DataTable();
+                table
+                    .clear()
+                    .draw();
+                Secciones = JSON.parse(dat);
+                console.log(Secciones);
+                Secciones.forEach(a => {
+                    var numeroFecha = a.FechaRegistro;
+                    var fechaObj = new Date(numeroFecha);
+                    var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                    var fechaText = fechaObj.toLocaleDateString('es-ES', options);
+                    $('#myTable').DataTable().rows.add(
+                        [
+                            {
+                                seccionNombre: a.seccionNombre,
+                                SeccionID: a.SeccionID,
+                                cursoNombre: a.cursoNombre,
+                                maestroNombre: a.maestroNombre + " " + a.maestroApellido,
+                                FechaRegistro: {
+                                    display: fechaText,
+                                    timestamp: moment(a.FechaRegistro, "DD-MM-YYYY hh:mm:ss").unix() // "704152800"
+                                },
+                                Crud: '<a id="editSeccion" class="btn btn-warning" onclick="abrirModal(' + a.SeccionID + ')"> Detalles </a>'
+                            }
+                        ]
+                    ).draw();
+                }
+                )
+            } else {
+                Swal.fire({
+                    icon: "warning",
+                    title: "La fecha inicial no puede ser posterior a la final.",
+                    text: ""
+                })
+            }
+        } else {
+            Swal.fire({
+                icon: "warning",
+                title: "No deje ningun campo vacio.",
+                text: ""
+            })
+        }
+    }
+
+    $(document).ready(function () {
+        $("#export").click(function () {
+            var export_type = $(this).data('export-type');
+            $('#myTable').tableExport({
+                type: export_type,
+                escape: 'false',
+                ignoreColumn: []
+            });
+        });
+    });
+
+    function exportarSeccionesNormal() {
+        window.location.href = 'http://localhost:15699/Modulos/filtrarSeccionesExcel';
+    }
+
+    function exportarSeccionesFecha() {
+        window.location.href = 'http://localhost:15699/Modulos/filtrarSeccionesFechaExcel?fechaInicial=' + fechaIni.value + '&fechaFinal=' + fechaFini.value + '';
+    }
+
+    async function exportar() {
+        if (fechaFini.value == '' && fechaIni.value == '') {
+            await exportarSeccionesNormal();
+
+            await Swal.fire('Reporte generado correctamente', '', 'success');
+        } else {
+            if (fechaFini.value != '' && fechaIni.value != '') {
+                await exportarSeccionesFecha();
+            } else {
+                await Swal.fire('Si va a exportar un reporte con fecha, debe tener los campos de fecha inicia y final relleno, en dicho caso que no quiera exportar filtrando la fecha fecha, dele click a limpiar primero.', '', 'warning');
+            }
+        }
+    }
+</script>

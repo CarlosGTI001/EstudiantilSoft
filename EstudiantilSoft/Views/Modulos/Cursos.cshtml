@@ -1,0 +1,450 @@
+﻿@model IEnumerable<EstudiantilSoft.Models.curso>
+@{
+
+    ViewData["Page"] = "Cursos - ";
+    ViewData["Menu"] = "true";
+    ViewData["Index"] = "false";
+    ViewData["Login"] = "Logued";
+}
+
+@{
+}
+
+    <span style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776; Modulos > Cursos</span>
+&nbsp;&nbsp;&nbsp;<a asp-action="Index" class="btn btn-danger"><- Volver</a>
+    <br />
+    <br />
+    <br />
+<content class="bodyest">
+    Fecha Inicio:
+    <input type='text' readonly id='date-from' class="datepicker" name="fechaInicial" placeholder='Fecha Inicio' class="form-control form-control-sm">
+    &nbsp;&nbsp;&nbsp;
+    Fecha Fin:
+    <input type='text' readonly id='date-to' class="datepicker" placeholder='Fecha fin' class="form-control form-control-sm">
+    &nbsp;&nbsp;&nbsp;
+    <submit onclick="filtrar()" type='button' id="btn_search" value="Filtrar por fecha" name="fechaFinal" class="btn btn-danger btn-lg">Filtrar</submit>
+    &nbsp;
+    <button id="btnLimpiar" class="btn btn-success btn-lg" onclick="cargarDatos()">Limpiar</button>
+    <button id="btnInsertar" class="btn btn-primary btn-lg float-right" style="margin-right: 50px;" onclick="abrirModalInsertar()">Ingresar Curso <i class="fa fa-plus"></i></button>
+
+    <a id="btnExportar" class="btn btn btn-outline-success  btn-lg float-right" style="margin-right: 10px;" onclick="exportar();">Exportar a Excel <i class="fa fa-file-excel"></i></a>
+
+
+    <br />
+    <table class="table bg-primary text-white" id="myTable">
+
+        <thead>
+
+            <tr>
+                <th>
+                    Curso
+                </th>
+                <th>
+                    Nivel
+                </th>
+                <th>
+                    Fecha de Registro
+                </th>
+
+                <th>ID</th>
+                <th>
+
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @*@foreach(var item in Model){
+            <tr>
+            <td>
+            @Html.DisplayFor(modelItem => item.cursoNombre)
+            @{
+            Nombres.Append(item.cursoNombre);
+            }
+            </td>
+            <td>
+            @Html.DisplayFor(modelItem => item.Nivel)
+            @{
+            Niveles.Append(item.Nivel);
+            }
+            </td>
+            <td>
+            @Html.DisplayFor(modelItem => item.FechaRegistro)
+            @{
+            Fechas.Append(item.FechaRegistro);
+            }
+            </td>
+            </tr>
+            }*@
+        </tbody>
+    </table>
+</content>
+<div id="dialog-form" title="Detalles">
+
+    <form asp-action="ModificarCurso" asp-controller="Modulos" method="post">
+        <fieldset>
+            <label class="label" for="name">Curso</label>
+            <input type="text" name="nombre" id="nombre"  value="" class="text ui-widget-content ui-corner-all">
+            <label class="label"  for="email">Nivel</label>
+            <input type="text" name="nivel" id="nivel" value="" class="text ui-widget-content ui-corner-all">
+            <input type="submit" tabindex="-1" style="position:absolute; top:-1000px" value="Enviar">
+        </fieldset>
+    </form>
+</div>
+
+<div id="dialog-form-insertar" title="Insertar">
+    <p class="validateTips">Todos los campos son necesarios.</p>
+
+    <form asp-action="ModificarCurso" asp-controller="Modulos" method="post">
+        <fieldset>
+            <label class="label" for="name">Curso</label>
+            <input type="text" name="nombreI" id="nombreI" value="" class="text ui-widget-content ui-corner-all">
+            <label class="label" for="email">Nivel</label>
+            <input type="text" name="nivelI" id="nivelI" value="" class="text ui-widget-content ui-corner-all">
+            <input type="submit" tabindex="-1" style="position:absolute; top:-1000px" value="Enviar">
+        </fieldset>
+    </form>
+</div>
+            <script>
+
+       
+    //    // Boton Buscar
+    //    $('#btn_search').click(function () {
+    //        dataTable.draw();
+    //    });
+
+
+    
+    
+        $(document).ready(function () {
+            $(".datepicker").datepicker({
+                "dateFormat": "mm-dd-yy",
+                changeYear: true
+            });
+        });
+
+        //$(document).ready(function () {
+        //    // Test Moment.js
+        //    var clock = setInterval(function () {
+        //        $('#clock').text(moment().format('YYYY-MM-DD HH:mm:ss'))
+        //    }, 1000);
+
+        //    // Test DataTables.js
+        //    $.fn.dataTable.ext.errMode = 'throw';
+
+        //    $.fn.dataTable.ext.search.push(
+        //        function (settings, data, dataIndex, dataFull, dataFullIndex) {
+        //            var wrapper = $(settings.nTable).closest('.table-wrapper');
+        //            var fecha_row = dataFull.FechaRegistro.timestamp;
+        //            var fecha_inicio = $(wrapper).find('[name="fecha_inicio"]').val();
+        //            var fecha_fin = $(wrapper).find('[name="fecha_fin"]').val();
+        //            fecha_inicio = moment(fecha_inicio, 'YYYY-MM-DD').unix();
+        //            fecha_fin = moment(fecha_fin, 'YYYY-MM-DD').unix();
+        //            console.log(fecha_row, fecha_inicio, fecha_fin);
+
+        //            if ((!isNaN(fecha_inicio) && fecha_inicio > fecha_row) ||
+        //                (!isNaN(fecha_fin) && fecha_fin < fecha_row)) {
+        //                return false;
+        //            }
+        //            return true;
+
+        //        }
+        //    );
+        //    });
+        var idi;
+    $.fn.dataTable.render.moment = function (from, to, locale) {
+        // Argument shifting
+        if (arguments.length === 1) {
+            locale = 'en';
+            to = from;
+            from = 'YYYY-MM-DD';
+        }
+        else if (arguments.length === 2) {
+            locale = 'en';
+        }
+
+        return function (d, type, row) {
+            if (!d) {
+                return type === 'sort' || type === 'type' ? 0 : d;
+            }
+
+            var m = window.moment(d, from, locale, true);
+
+            // Order and type get a number value from Moment, everything else
+            // sees the rendered value
+            return m.format(type === 'sort' || type === 'type' ? 'x' : to);
+        };
+    };
+             $('#myTable').DataTable({
+        columnDefs: [
+            {
+                targets: 2,
+                render: DataTable.render.datetime('Do MMM YYYY'),
+            },
+        ],
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.16/i18n/Spanish.json"
+            },
+                columns: [
+            
+                    {
+                        name: 'Curso',
+                        data: 'Curso'
+                    },
+                    {
+                        name: 'Nivel',
+                        data: 'Nivel'
+                    },
+                    {
+                        name: 'FechaRegistro',
+                        data: 'FechaRegistro',
+                        displayFormat: 'D/M/YYYY',
+                        render: {
+                            _: 'display',
+                            sort: 'timestamp',
+                            filter: 'timestamp'
+                        }
+                    },
+            {
+                        name: 'ID',
+                        data: 'ID'
+                    },
+                    {
+                        name: 'Crud',
+                        data: 'Crud'
+                    },
+                ],
+                
+
+            });
+                var cantidad = @Model.Count().ToString();
+                var son;
+                var dat;
+                var cursos;
+                async function cargarDatos() {
+                    let son = await fetch("../../../../../Modulos/LeerCursos");
+                    let dat = await son.json()
+                    var table = $('#myTable').DataTable();
+                    table
+                        .clear()
+                        .draw();
+                    cursos = JSON.parse(dat);
+                    cursos.forEach(a=>{
+                        var numeroFecha = a.FechaRegistro;
+                        var fechaObj = new Date(numeroFecha);
+                        var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                        var fechaText = fechaObj.toLocaleDateString('es-ES', options);
+                        console.log(fechaObj.toLocaleDateString('es-ES', options));
+                                $('#myTable').DataTable().rows.add(
+                                    [
+                                        {
+                                            Curso: a.cursoNombre,
+                                            Nivel: a.Nivel,
+                                            ID: a.cursoID,
+                                            FechaRegistro: {
+                                                display: fechaText,
+                                                timestamp: moment(a.FechaRegistro, "DD-MM-YYYY hh:mm:ss").unix() // "704152800"
+                        },
+                        Crud: '<a id="editCurso" class="btn btn-warning" onclick="abrirModal(' + a.cursoID + ')"> Detalles </a>'
+                    },
+                                    ]
+                                ).draw();
+                            }
+                    )
+
+                    document.getElementById("date-from").value = "";
+                    document.getElementById("date-to").value = "";
+                    
+                }
+                
+            cargarDatos();
+    var fechaIni = document.getElementById("date-from");
+    var fechaFini = document.getElementById("date-to");
+    
+    
+        var dialog, form
+
+        
+
+
+        dialog = $("#dialog-form").dialog({
+        autoOpen: false,
+        height: 400,
+        width: 350,
+        modal: true,
+        buttons: {
+            "Editar" : enviarDatos,
+            Delete: function () {
+                eliminarDatos()
+                cargarDatos();
+                dialog.dialog("close");
+            },
+            Cancel: function () {
+                dialog.dialog("close");
+            }
+        },
+        close: function () {
+            form[0].reset();
+        }
+    });
+
+    dialogI = $("#dialog-form-insertar").dialog({
+        autoOpen: false,
+        height: 400,
+        width: 350,
+        modal: true,
+        buttons: {
+            "Insertar": insertarDatos,
+            Cancel: function () {
+                dialogI.dialog("close");
+            }
+        },
+        close: function () {
+            form[0].reset();
+        }
+    });
+
+    async function insertarDatos() {
+                await fetch('../../../../../Modulos/InsertarCurso?&cursoNombre=' + document.getElementById("nombreI").value + '&Nivel=' + document.getElementById("nivelI").value)
+                await Swal.fire('Curso modificado correctamente', '', 'success');
+                await cargarDatos();
+                await dialogI.dialog("close");
+    }
+
+    function enviarDatos(){
+       
+        
+        Swal.fire({
+            title: 'En realidad desea editar el curso?',
+            showDenyButton: true,
+            confirmButtonText: 'Si',
+            denyButtonText: `No`,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('../../../../../Modulos/ModificarCurso?CursoID=' + idi + '&nombreCurso=' + document.getElementById("nombre").value + '&Nivel=' + document.getElementById("nivel").value)
+                Swal.fire('Curso modificado correctamente', '', 'success');
+                cargarDatos();
+                dialog.dialog("close");
+            }
+        })
+    }
+    async function eliminarDatos(){
+        Swal.fire({
+            title: 'En realidad desea eliminar el curso?',
+            showDenyButton: true,
+            confirmButtonText: 'Si',
+            denyButtonText: `No`,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('../../../../../Modulos/EliminarCurso?CursoID=' + idi)
+                Swal.fire('Curso eliminado correctamente', '', 'success');
+                cargarDatos();
+                dialog.dialog("close");
+            }
+        })
+    }
+        form = dialog.find("form").on("submit", function (event) {
+            event.preventDefault();
+            addUser();
+        });
+        var datos;
+        var jsan;
+        var cursete
+    async function abrirModal(id){
+        let son = await fetch("../../../../../Modulos/filtrarCursosID?CursoID=" + id);
+        let dat = await son.json();
+        cursete = JSON.parse(dat);
+        console.log(cursete);
+        idi = id;
+        document.getElementById("nombre").value = await cursete.cursoNombre;
+        document.getElementById("nivel").value = await cursete.Nivel;
+        console.log("xD")
+        await dialog.dialog("open");
+    };
+
+    function abrirModalInsertar(){
+        dialogI.dialog("open");
+    }
+    async function filtrar() {
+        if(fechaFini.value != '' || fechaIni.value != ''){
+            if (fechaIni.value <= fechaFini.value) {
+
+                fechaIni = document.getElementById("date-from");
+                fechaFini = document.getElementById("date-to");
+                let son = await fetch("../../../../../Modulos/filtrarCursos?fechaInicial=" + fechaIni.value + "&fechaFinal=" + fechaFini.value);
+                let dat = await son.json()
+                var table = $('#myTable').DataTable();
+                table
+                    .clear()
+                    .draw();
+                cursos = JSON.parse(dat);
+                console.log(cursos);
+                cursos.forEach(a => {
+                    var numeroFecha = a.FechaRegistro;
+                    var fechaObj = new Date(numeroFecha);
+                    var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                    var fechaText = fechaObj.toLocaleDateString('es-ES', options);
+                    $('#myTable').DataTable().rows.add(
+                        [
+                            {
+                                Curso: a.cursoNombre,
+                                Nivel: a.Nivel,
+                                ID: a.cursoID,
+                                FechaRegistro: {
+                                    display: fechaText,
+                                    timestamp: moment(a.FechaRegistro, "DD-MM-YYYY hh:mm:ss").unix() // "704152800"
+                                },
+                                Crud: '<a id="editCurso" class="btn btn-warning" onclick="abrirModal('+a.Id+')"> Detalles </a>'
+                            }
+                        ]
+                    ).draw();
+                }
+                )
+            } else {
+                Swal.fire({
+                    icon: "warning",
+                    title: "La fecha inicial no puede ser posterior a la final.",
+                    text: ""
+                })
+            }
+        }else{
+            Swal.fire({
+                icon: "warning",
+                title: "No deje ningun campo vacio.",
+                text: ""
+            })
+        }
+    }
+
+    $(document).ready(function () {
+        $("#export").click(function () {
+            var export_type = $(this).data('export-type');
+            $('#myTable').tableExport({
+                type: export_type,
+                escape: 'false',
+                ignoreColumn: []
+            });
+        });
+    });
+
+    function exportarCursosNormal(){
+        window.location.href = 'http://localhost:15699/Modulos/filtrarCursosExcel';
+    }
+
+    function exportarCursosFecha(){
+        window.location.href = 'http://localhost:15699/Modulos/filtrarCursosFechaExcel?fechaInicial='+fechaIni.value+'&fechaFinal='+fechaFini.value+'';
+    }
+
+    async function exportar(){
+        if (fechaFini.value == '' && fechaIni.value == '') {
+            await exportarCursosNormal();
+            
+            await Swal.fire('Reporte generado correctamente', '', 'success');
+        }else{
+            if (fechaFini.value != '' && fechaIni.value != '') {
+                await exportarCursosFecha();
+            }else{
+                await Swal.fire('Si va a exportar un reporte con fecha, debe tener los campos de fecha inicia y final relleno, en dicho caso que no quiera exportar filtrando la fecha fecha, dele click a limpiar primero.', '', 'warning');
+            }
+        }
+    }
+</script>

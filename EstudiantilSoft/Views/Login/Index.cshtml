@@ -1,0 +1,67 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@model EstudiantilSoft.Models.login
+
+
+
+
+    <div class="div-center">
+
+        <div class="row">
+            <div class="col-6">
+                <div class="content">
+                    <h3>Login</h3>
+                    <hr />
+                    <form asp-action="Index" method="post">
+                        <div class="form-group">
+                            <label asp-for="UserName">Usuario</label>
+                            <input asp-for="UserName" class="form-control" id="UserName" placeholder="Usuario">
+                        </div>
+                        <div class="form-group">
+                            
+                            <label asp-for="UserPass">Contraseña</label>
+                            <input asp-for="UserPass" class="form-control" id="UserPass" placeholder="Password">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </form>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="position-relative h-100">
+                    <img class="position-absolute w-100 h-100" src="img/colegio1.jpg" style="object-fit: cover;">
+                </div>
+            </div>
+        </div>
+        
+
+    </div>
+    @{
+        try{
+        if (ViewData["Resultado"].ToString() == "Errado")
+            {
+                <script>
+                    Swal.fire({
+                        icon: "error",
+                        title: "Alerta",
+                        text: "Usuario o contraseña incorrecta, revise las credenciales e intentelo de nuevo."
+                    })
+                </script>
+            }
+        }catch{
+
+        }
+        try{
+            if(ViewData["noAuth"].ToString() == "true"){
+                <script>
+                    Swal.fire({
+                        icon: "warning",
+                        title: "No identificado",
+                        text: "Para acceder a este modulo vuelve a iniciar seccion."
+                    })
+                </script>
+            }
+        }catch{
+
+        }
+    }

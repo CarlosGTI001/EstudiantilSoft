@@ -1,0 +1,26 @@
+﻿@model EstudiantilSoft.Models.login
+
+@{
+    ViewData["Page"] = "Detalle de Usuarios - ";
+    ViewData["Menu"] = "true";
+    ViewData["Index"] = "false";
+    ViewData["Login"] = "Logued";
+}
+
+<h1>Detalles de usuario</h1>
+
+<div>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.UserName)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.UserName)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.UserId">Edit</a> |
+    <a asp-action="Usuarios">Back to List</a>
+</div>

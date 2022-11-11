@@ -1,0 +1,35 @@
+﻿@model EstudiantilSoft.Models.login
+
+@{
+    ViewData["Page"] = "Eliminar Usuario - ";
+    ViewData["Menu"] = "true";
+    ViewData["Index"] = "false";
+    ViewData["Login"] = "Logued";
+}
+
+
+<h3>Estas seguro que lo quieres eliminar?</h3>
+<div>
+    <h4>login</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.UserName)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.UserName)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.UserPass)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.UserPass)
+        </dd>
+    </dl>
+    
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="UserId" />
+        <input type="submit" value="Delete" class="btn btn-danger" /> |
+        <a asp-action="Usuarios">Back to List</a>
+    </form>
+</div>
